@@ -31,16 +31,15 @@ const deleteCard = (req, res) => {
   Card.findById(req.params.cardId)
     .then((card) => {
       if (card) {
-        if (req.user._id === card.owner._id) {
-          card.remove();
-          res.send({ data: card });
-          console.log(card.owner._id);
-          console.log(req.user._id);
-          return;
+        if (req.user._id === card.owner._id.toSting()) {
+          return card.remove();
         }
         res.status(403).send({ message: 'У вас нет прав для удаления этой карточки' });
       }
-      res.status(404).send({ message: 'Нет такой карточки' });
+      return res.status(404).send({ message: 'Нет такой карточки' });
+    })
+    .then((card) => {
+      res.send({ data: card });
     })
     .catch(() => {
       res.status(500).send({ message: 'На сервере произошла ошибка' });
