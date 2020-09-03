@@ -15,7 +15,6 @@ const getUsers = (req, res) => {
 };
 
 const findUser = (req, res) => {
-  res.set({ 'Content-Type': 'Application/json; charset=utf-8' });
   User.findById(req.params.userId)
     .then((user) => {
       if (user) {
