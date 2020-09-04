@@ -1,3 +1,4 @@
+const { Error } = require('mongoose');
 const Card = require('../models/card');
 
 const getCard = (req, res) => {
@@ -29,19 +30,21 @@ const createCard = (req, res) => {
 };
 const deleteCard = (req, res) => {
   Card.findById(req.params.cardId)
+    .orFail((err) => err)
+    .populate('owner')
     .then((card) => {
-      if (card) {
-        if (req.user._id === card.owner._id.toSting()) {
-          return card.remove();
-        }
-        res.status(403).send({ message: 'У вас нет прав для удаления этой карточки' });
+      if (!card.owner.equals(req.user._id)) {
+        throw new Error(403, 'Access denied');
       }
-      return res.status(404).send({ message: 'Нет такой карточки' });
+      return card.remove()
+        .then(() => {
+          res.send({ delete: card });
+        });
     })
-    .then((card) => {
-      res.send({ data: card });
-    })
-    .catch(() => {
+    .catch((err) => {
+      if (err instanceof TypeError) {
+        res.status(403).send({ message: 'Нет прав на удаление' });
+      }
       res.status(500).send({ message: 'На сервере произошла ошибка' });
     });
 };
