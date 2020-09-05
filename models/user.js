@@ -34,7 +34,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 8,
-    validate: /[A-Za-z0-9]+/,
     select: false,
   },
 },
