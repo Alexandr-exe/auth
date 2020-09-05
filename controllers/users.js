@@ -23,13 +23,23 @@ const findUser = (req, res) => {
       }
       res.status(404).send({ message: 'Пользователь не найден' });
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(404).send({ message: 'User empty' });
+      }
+      return res.status(500).send({ message: err.message });
+    });
 };
 
 const createUser = (req, res) => {
   const {
-    name, about, avatar, email,
+    name, about, avatar, email, password,
   } = req.body;
+  const regexp = /[\W]+/i;
+  if (!password || regexp.test(password)) {
+    res.status(400).send({ message: 'Пароль либо пуст, либо содержит не верное значение' });
+    return;
+  }
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
       email,
@@ -42,7 +52,15 @@ const createUser = (req, res) => {
       id: user._id,
       email: user.email,
     }))
-    .catch((err) => res.status(400).send(err));
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        return res.status(400).send({ message: err.message });
+      }
+      if (err.name === 'MongoError' && err.code === 11000) {
+        return res.status(409).send({ message: 'Этот email уже зарегистрирован' });
+      }
+      return res.status(500).send({ message: 'Ошибка сервера' });
+    });
 };
 
 const login = (req, res) => {
