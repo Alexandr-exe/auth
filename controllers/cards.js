@@ -1,4 +1,3 @@
-const { Error } = require('mongoose');
 const Card = require('../models/card');
 
 const getCard = (req, res) => {
@@ -28,24 +27,24 @@ const createCard = (req, res) => {
       res.status(500).send({ message: 'На сервере произошла ошибка' });
     });
 };
+
 const deleteCard = (req, res) => {
   Card.findById(req.params.cardId)
-    .orFail((err) => err)
     .populate('owner')
     .then((card) => {
-      if (!card.owner.equals(req.user._id)) {
-        throw new Error(403, 'Access denied');
+      if (card.owner._id.toString() !== req.user._id) {
+        return res.status(403).send({ message: 'доступ запрещён' });
       }
       return card.remove()
         .then(() => {
           res.send({ delete: card });
         });
     })
-    .catch((err) => {
-      if (err instanceof TypeError) {
-        res.status(403).send({ message: 'Нет прав на удаление' });
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        return res.status(404).send({ message: 'Cart empty' });
       }
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
+      return res.status(500).send({ message: 'Проблемы сервера' });
     });
 };
 
