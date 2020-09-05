@@ -29,7 +29,7 @@ const findUser = (req, res) => {
         return res.status(400).send({ message: 'User empty' });
       }
       if (err.name === 'DocumentNotFoundError') {
-        return res.status(500).send({ message: 'Пользователь уже удалён или ещё не создан' });
+        return res.status(404).send({ message: 'Пользователь не найдён' });
       }
       return res.status(500).send({ message: err.message });
     });

@@ -43,10 +43,10 @@ const deleteCard = (req, res) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Cart empty' });
+        return res.status(400).send({ message: 'Card empty' });
       }
       if (error.name === 'DocumentNotFoundError') {
-        return res.status(500).send({ message: 'Карта уже удалена или ещё не создана' });
+        return res.status(404).send({ message: 'Card not found' });
       }
       return res.status(500).send({ message: 'Проблемы сервера' });
     });
