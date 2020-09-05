@@ -16,6 +16,7 @@ const getUsers = (req, res) => {
 
 const findUser = (req, res) => {
   User.findById(req.params.userId)
+    .orFail((error) => error)
     .then((user) => {
       if (user) {
         res.send({ data: user });
@@ -25,7 +26,10 @@ const findUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(404).send({ message: 'User empty' });
+        return res.status(400).send({ message: 'User empty' });
+      }
+      if (err.name === 'DocumentNotFoundError') {
+        return res.status(500).send({ message: 'Пользователь уже удалён или ещё не создан' });
       }
       return res.status(500).send({ message: err.message });
     });

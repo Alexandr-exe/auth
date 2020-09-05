@@ -31,6 +31,7 @@ const createCard = (req, res) => {
 const deleteCard = (req, res) => {
   Card.findById(req.params.cardId)
     .populate('owner')
+    .orFail((error) => error)
     .then((card) => {
       if (card.owner._id.toString() !== req.user._id) {
         return res.status(403).send({ message: 'доступ запрещён' });
@@ -42,7 +43,10 @@ const deleteCard = (req, res) => {
     })
     .catch((error) => {
       if (error.name === 'CastError') {
-        return res.status(404).send({ message: 'Cart empty' });
+        return res.status(400).send({ message: 'Cart empty' });
+      }
+      if (error.name === 'DocumentNotFoundError') {
+        return res.status(500).send({ message: 'Карта уже удалена или ещё не создана' });
       }
       return res.status(500).send({ message: 'Проблемы сервера' });
     });
