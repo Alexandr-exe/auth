@@ -1,0 +1,35 @@
+{
+  "name": "auth",
+  "version": "1.0.0",
+  "description": "auth",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alexandr-exe/auth.git"
+  },
+  "author": "Alexandr Tatarnikov",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Alexandr-exe/auth/issues"
+  },
+  "homepage": "https://github.com/Alexandr-exe/auth#readme",
+  "devDependencies": {
+    "eslint": "^7.6.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "nodemon": "^2.0.4"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "helmet": "^4.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.27",
+    "validator": "^13.1.1"
+  }
+}
