@@ -1,6 +1,8 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/NotFoundError');
+const ForbbienError = require('../errors/ForbbienError');
 
-const getCard = (req, res) => {
+const getCard = (req, res, next) => {
   Card.find({})
     .populate(['owner', 'likes'])
     .then((cards) => {
@@ -8,48 +10,32 @@ const getCard = (req, res) => {
         res.send({ cards });
         return;
       }
-      res.status(404).send({ message: 'Карточек нет' });
+      throw new NotFoundError('Карточек нет');
     })
-    .catch(() => {
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(201).send({ data: card }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Запрос неверно сформирован' });
-        return;
-      }
-      res.status(500).send({ message: 'На сервере произошла ошибка' });
-    });
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .populate('owner')
     .orFail((error) => error)
     .then((card) => {
       if (card.owner._id.toString() !== req.user._id) {
-        return res.status(403).send({ message: 'доступ запрещён' });
+        throw new ForbbienError('доступ запрещён');
       }
       return card.remove()
         .then(() => {
           res.send({ delete: card });
         });
     })
-    .catch((error) => {
-      if (error.name === 'CastError') {
-        return res.status(400).send({ message: 'Card empty' });
-      }
-      if (error.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Card not found' });
-      }
-      return res.status(500).send({ message: 'Проблемы сервера' });
-    });
+    .catch(next);
 };
 
 module.exports = { getCard, createCard, deleteCard };
