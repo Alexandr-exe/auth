@@ -4,6 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const { celebrate, Joi } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const auth = require('./middlewares/auth');
@@ -14,6 +15,7 @@ const NotFoundError = require('./errors/NotFoundError');
 const linkValidator = require('./helpers/linkValidation');
 
 const app = express();
+app.use(cookieParser());
 
 app.use(helmet());
 
