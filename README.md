@@ -21,9 +21,9 @@ Tatarnikov Alexandr
 
 **Доменные имена и ip:**
 
-- [API](api.exart.website)
-- [IP](95.71.124.253)
-- [Статические файлы](exart.website)
+- [API](https://api.exart.website)
+- [IP](https//95.71.124.253)
+- [Статические файлы](https://exart.website)
 
 Запросы сервера:
 
