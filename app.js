@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const auth = require('./middlewares/auth');
 const { createUser, login } = require('./controllers/users');
@@ -71,17 +71,21 @@ app.use((req, res) => {
   throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
 
+app.use(errors());
+
 app.use((err, req, res, next) => {
   let { statusCode = 500, message } = err;
 
   if (err.code === 11000) {
     statusCode = 409;
     message = 'Пользователь с таким email уже есть';
+    return;
   }
 
   if (err.name === 'ValidationError') {
     statusCode = 400;
     message = 'Запрос неверно сформирован';
+    return;
   }
 
   res.status(statusCode).send({
