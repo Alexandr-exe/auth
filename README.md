@@ -3,9 +3,9 @@
 
 Tatarnikov Alexandr
 ==
-### Проектная работа 14 Yandex.praktikum
+### Проектная работа 15 Yandex.praktikum
 
-**Реализация аутентификации и авторизации в проекте Mesto.**
+**Backend and API**
 
 зависимости использованные в проекте:
 
@@ -15,10 +15,38 @@ Tatarnikov Alexandr
 - body-parser,
 - bcryptjs,
 - jsonwebtoken,
-- validator
+- validator,
+- celebrate,
+- winston
 
-Запуск проекта:
+**Доменные имена и ip:**
 
-- npm run dev - hotReload режим сервера
-- npm run start - запуск сервера в обычном режиме.
+- [API](api.exart.website)
+- [IP](95.71.124.253)
+- [Статические файлы](exart.website)
 
+Запросы сервера:
+
+_Создание пользователя_
+
+- /signup (POST)
+
+_Авторизация_
+
+- /signin (POST)
+
+_Все пользователей_
+
+- /users (GET)
+
+_Создать карточку_
+
+- domain/cards (POST)
+
+_Удалить карточку_
+
+- /cards/:id (DELETE)
+
+_Все карточки_
+
+- /cards (GET)
