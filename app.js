@@ -76,16 +76,14 @@ app.use(errors());
 app.use((err, req, res, next) => {
   let { statusCode = 500, message } = err;
 
-  if (err.code === 11000) {
+  if (err.code === 11000 && err.name === 'MongoError') {
     statusCode = 409;
     message = 'Пользователь с таким email уже есть';
-    return;
   }
 
   if (err.name === 'ValidationError') {
     statusCode = 400;
     message = 'Запрос неверно сформирован';
-    return;
   }
 
   res.status(statusCode).send({
