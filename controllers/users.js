@@ -1,48 +1,50 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const EmptyError = require('../errors/EmptyError');
 
-const getUsers = (req, res) => {
+const { NODE_ENV, JWT_SECRET } = process.env;
+
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
       if (users) {
         res.send({ users });
         return;
       }
-      res.status(404).send({ message: 'Пользователи отсутствуют' });
+      throw new NotFoundError('Пользователи отсутствуют');
     })
-    .catch((err) => res.status(500).send({ message: err.message }));
+    .catch((err) => next(err));
 };
 
-const findUser = (req, res) => {
+const findUser = (req, res, next) => {
   User.findById(req.params.userId)
-    .orFail((error) => error)
+    .orFail((err) => {
+      if (err.name === 'CastError') {
+        throw new EmptyError('User empty');
+      }
+      if (err.name === 'DocumentNotFoundError') {
+        throw new NotFoundError('Пользователь не найдён');
+      }
+    })
     .then((user) => {
       if (user) {
         res.send({ data: user });
         return;
       }
-      res.status(404).send({ message: 'Пользователь не найден' });
+      throw new NotFoundError('Пользователь не найден');
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'User empty' });
-      }
-      if (err.name === 'DocumentNotFoundError') {
-        return res.status(404).send({ message: 'Пользователь не найдён' });
-      }
-      return res.status(500).send({ message: err.message });
-    });
+    .catch(next);
 };
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
   const regexp = /[\W]+/i;
   if (!password || regexp.test(password)) {
-    res.status(400).send({ message: 'Пароль либо пуст, либо содержит не верное значение' });
-    return;
+    throw new EmptyError('Пароль либо пуст, либо содержит не верное значение');
   }
   bcrypt.hash(req.body.password, 10)
     .then((hash) => User.create({
@@ -52,35 +54,34 @@ const createUser = (req, res) => {
       avatar,
       password: hash,
     }))
-    .then((user) => res.status(201).send({
-      id: user._id,
-      email: user.email,
-    }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: err.message });
-      }
-      if (err.name === 'MongoError' && err.code === 11000) {
-        return res.status(409).send({ message: 'Этот email уже зарегистрирован' });
-      }
-      return res.status(500).send({ message: 'Ошибка сервера' });
-    });
+
+    .then((user) => {
+      res.status(201).send({
+        id: user._id,
+        email: user.email,
+      });
+    })
+    .catch(next);
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id },
-        'some-secret-key',
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-key',
         { expiresIn: '7d' });
+      res
+        .cookie('jwt', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+          sameSite: true,
+        });
       res.send({
         token,
       });
     })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
+    .catch(next);
 };
 
 module.exports = {
